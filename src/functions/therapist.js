@@ -79,6 +79,13 @@ module.exports = async () => {
     });
   });
 
+  arr.map((val, i) => {
+    if (val[6]) {
+    } else {
+      arr[i].push(null);
+    }
+  });
+
   console.log(arr);
 
   var sql =

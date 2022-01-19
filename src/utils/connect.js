@@ -12,7 +12,7 @@ module.exports = async () => {
     host: "localhost",
     user: "root",
     password: "",
-    database: "tyho_test",
+    database: "tyho_new",
   });
 
   return { connection, connection1 };

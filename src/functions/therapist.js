@@ -58,6 +58,7 @@ module.exports = async () => {
 
   rows.map((result) => {
     let obj = [];
+    obj.push(result.ID);
     obj.push("+65");
     obj.push("2");
     rows1.map((result1) => {
@@ -89,7 +90,7 @@ module.exports = async () => {
   console.log(arr);
 
   var sql =
-    "INSERT INTO users (dial_code, usertype, first_name,middle_name,last_name,mobile_no,email) VALUES ?";
+    "INSERT INTO users (post_id,dial_code, usertype, first_name,middle_name,last_name,mobile_no,email) VALUES ?";
 
   const [rows4, fields4] = await db.connection1.query(sql, [arr]);
 };

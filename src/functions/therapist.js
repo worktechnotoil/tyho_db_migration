@@ -81,7 +81,7 @@ module.exports = async () => {
   });
 
   arr.map((val, i) => {
-    if (val[6]) {
+    if (val[7]) {
     } else {
       arr[i].push(null);
     }

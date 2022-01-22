@@ -3,4 +3,4 @@ const therapist = require("./functions/therapist");
 const therapistOrder = require("./functions/therapistOrder");
 
 // therapistOrder();
-// therapist();
+therapist();

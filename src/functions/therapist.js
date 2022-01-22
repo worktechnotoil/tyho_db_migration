@@ -55,6 +55,9 @@ module.exports = async () => {
   const [rows3, fields3] = await db.connection.execute(
     "SELECT * FROM xalfyiBase_users"
   );
+  const [rows4, fields4] = await db.connection.execute(
+    "SELECT * FROM xalfyiBase_usermeta"
+  );
 
   rows.map((result) => {
     let obj = [];
@@ -71,26 +74,49 @@ module.exports = async () => {
     });
     arr.push(obj);
   });
-
-  arr.map((value, index) => {
-    rows3.map((val, i) => {
-      if (value[5] == val.user_login) {
-        arr[index].push(val.user_email);
+  let ids = [];
+  arr.map((val, i) => {
+    rows3.map((val1, i1) => {
+      if (val[6] == val1.user_login) {
+        ids.push(val1.ID);
+        val.push(val1.ID, val1.user_email);
       }
     });
   });
 
-  arr.map((val, i) => {
-    if (val[7]) {
+  let user = [];
+  rows3.map((val, i) => {
+    let ar = [];
+    if (ids.includes(val.ID)) {
+      ar.push(2);
     } else {
-      arr[i].push(null);
+      ar.push(3);
     }
+    ar.push(val.ID, val.user_login, val.user_email, "+65");
+    user.push(ar);
   });
 
-  console.log(arr);
-
+  user.map((val, i) => {
+    rows4.map((val1, i1) => {
+      if (val[1] == val1.user_id) {
+        if (val1.meta_key == "first_name") {
+          val.push(val1.meta_value);
+        }
+        if (val1.meta_key == "last_name") {
+          val.push(val1.meta_value);
+        }
+        if (val1.meta_key == "middlename") {
+          val.push(val1.meta_value);
+        }
+      }
+    });
+    if (val.length == 7) {
+      val.push("");
+    }
+  });
+  console.log(user);
   // var sql =
-    // "INSERT INTO users (post_id,dial_code, usertype, first_name,middle_name,last_name,mobile_no,email) VALUES ?";
+  // "INSERT INTO users (post_id,dial_code, usertype, first_name,middle_name,last_name,mobile_no,email) VALUES ?";
 
   // const [rows4, fields4] = await db.connection1.query(sql, [arr]);
 };

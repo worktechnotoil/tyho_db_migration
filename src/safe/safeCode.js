@@ -17,3 +17,9 @@ const applications = [
   { key: "preferred-modes-of-communication", ch: "last-name" },
   { key: "approximate-availability-hours-per-week", ch: "last-name" },
 ];
+
+value2.amount = value2.total_amount - value2.discount_amount;
+
+value2.zip_code = value1._billing_postcode;
+value2.phone_no = value1._billing_phone;
+value2.country = value1._billing_country;

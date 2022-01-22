@@ -75,6 +75,42 @@ module.exports = async () => {
       if (value.booked_wc_appointment_cal_name == value1.display_name) {
         value.user_login = value1.user_login;
         value.user_email = value1.user_email;
+        value.therapist_id_fk = value1.ID;
+      }
+    });
+  });
+
+  rows1.map((value1, index1) => {
+    arr.map((value2, index2) => {
+      if (value2.post_id == value1.post_id) {
+        if (value1.meta_key == "_order_total") {
+          value2.total_amount = value1.meta_value;
+        }
+        if (value1.meta_key == "_cart_discount") {
+          value2.discount_amount = value1.meta_value;
+        }
+        if (value1.meta_key == "_billing_postcode") {
+          value2.zip_code = value1.meta_value;
+        }
+        if (value1.meta_key == "_billing_phone") {
+          value2.phone_no = value1.meta_value;
+        }
+        if (value1.meta_key == "_billing_country") {
+          value2.country = value1.meta_value;
+        }
+        if (value1.meta_key == "_transaction_id") {
+          value2.transaction_id = value1.meta_value;
+        }
+        if (value1.meta_key == "_billing_city") {
+          value2.city = value1.meta_value;
+        }
+        value2.city = value2.city ? value2.city : "";
+        value2.service_amount = value2.total_amount;
+        value2.amount = value2.total_amount - value2.discount_amount;
+        value2.order_status = 1;
+        value2.service_id_fk = 1;
+        value2.time_zone = "Asia/Singapore";
+        value2.country_id_fk = 5;
       }
     });
   });

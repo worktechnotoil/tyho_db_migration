@@ -114,9 +114,9 @@ module.exports = async () => {
       val.push("");
     }
   });
-  console.log(user);
-  // var sql =
-  // "INSERT INTO users (post_id,dial_code, usertype, first_name,middle_name,last_name,mobile_no,email) VALUES ?";
 
-  // const [rows4, fields4] = await db.connection1.query(sql, [arr]);
+  var sql =
+    "INSERT INTO users (usertype,post_id,mobile_no,email,dial_code,first_name,last_name,middle_name) VALUES ?";
+
+  const [rows5, fields5] = await db.connection1.query(sql, [arr]);
 };

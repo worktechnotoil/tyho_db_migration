@@ -14,7 +14,11 @@ module.exports = async () => {
   );
 
   const [rows3, fields3] = await db.connection.execute(
-    "SELECT * FROM xalfyiBase_users"
+    "SELECT * FROM xalfyiBase_posts WHERE post_type LIKE 'tyho-wellbeing-coach'"
+  );
+
+  const [rows4, fields4] = await db.connection1.execute(
+    "SELECT * FROM `users`"
   );
 
   const arr = [];
@@ -72,13 +76,20 @@ module.exports = async () => {
 
   arr.map((value, index) => {
     rows3.map((value1, index1) => {
-      if (value.booked_wc_appointment_cal_name == value1.display_name) {
-        value.user_login = value1.user_login;
-        value.user_email = value1.user_email;
-        value.therapist_id_fk = value1.ID;
+      if (value.booked_wc_appointment_cal_name == value1.post_title) {
+        value.therapist_post_id = value1.ID;
+        rows4.map((value2, index2) => {
+          if (value2.post_id == value1.ID) {
+            value.therapist_id = value2.id;
+          }
+        });
       }
     });
   });
+
+ 
+
+  
 
   rows1.map((value1, index1) => {
     arr.map((value2, index2) => {

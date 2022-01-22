@@ -89,8 +89,8 @@ module.exports = async () => {
 
   console.log(arr);
 
-  var sql =
-    "INSERT INTO users (post_id,dial_code, usertype, first_name,middle_name,last_name,mobile_no,email) VALUES ?";
+  // var sql =
+    // "INSERT INTO users (post_id,dial_code, usertype, first_name,middle_name,last_name,mobile_no,email) VALUES ?";
 
-  const [rows4, fields4] = await db.connection1.query(sql, [arr]);
+  // const [rows4, fields4] = await db.connection1.query(sql, [arr]);
 };

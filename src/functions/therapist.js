@@ -1,5 +1,5 @@
 const connect = require("../utils/connect");
-//"SELECT * FROM xalfyiBase_postmeta"
+const moment = require("moment");
 
 module.exports = async () => {
   const db = await connect();
@@ -33,7 +33,7 @@ module.exports = async () => {
     "approximate-availability-hours-per-week",
   ];
 
-  const users = ["first-name", "middle-name", "last-name", "phone-number"];
+  const users = ["first-name", "middle-name", "last-name", "phone-number","languages"];
 
   const users1 = [
     { key: "first-name", ch: "first_name" },
@@ -59,6 +59,8 @@ module.exports = async () => {
     "SELECT * FROM xalfyiBase_usermeta"
   );
 
+  
+
   rows.map((result) => {
     let obj = [];
     obj.push(result.ID);
@@ -66,6 +68,8 @@ module.exports = async () => {
     obj.push("2");
     rows1.map((result1) => {
       if (result1.post_id === result.ID) {
+
+        // console.log(result1.meta_key);
         if (users.includes(result1.meta_key)) {
           const ke = result1.meta_key;
           obj.push(result1.meta_value);
@@ -108,6 +112,10 @@ module.exports = async () => {
         if (val1.meta_key == "middlename") {
           val.push(val1.meta_value);
         }
+
+      
+      
+      
       }
     });
     if (val.length == 7) {
@@ -115,8 +123,76 @@ module.exports = async () => {
     }
   });
 
-  var sql =
-    "INSERT INTO users (usertype,post_id,mobile_no,email,dial_code,first_name,last_name,middle_name) VALUES ?";
+  var CurrentDate = moment().format("YYYY-MM-DD HH:mm:ss");
 
-  const [rows5, fields5] = await db.connection1.query(sql, [arr]);
+
+  console.log(user);
+
+  // for (const records of user) 
+  // {
+  //   // console.log(records);
+
+  //   records[records.length] = CurrentDate;
+  //   records[records.length] = CurrentDate;
+  //   // console.log(records);
+
+  //   var sql =
+  //   "INSERT INTO users (usertype,post_id,mobile_no,email,dial_code,first_name,last_name,middle_name,created_at,updated_at) VALUES ?";
+
+  //   const [rows5, fields5] = await db.connection1.query(sql, [[records]]);
+
+  //   var user_id = rows5.insertId;
+  //   var user_type = records[0];
+
+  //   const firstName = records[5];
+   
+  //   const Username = firstName.substr( 0, 3);
+  //   const UserID = Username + "_" + user_id;
+  //   await db.connection1.query('UPDATE users SET ? WHERE id = ?', [{ "user_id": UserID }, user_id]);
+
+  //   // therapist_details insert
+  //   if (user_type == 2)
+  //   {
+      
+  //     var values_therapist_details = [[1,1,5,user_id,"Asia/Singapore",CurrentDate,CurrentDate]];
+  //     var sql =
+  //     "INSERT INTO therapist_details (service_id_fk,medium_id_fk,country_id_fk,therapist_id_FK,my_timezone,created_at,updated_at) VALUES ?";
+  //     const [rows6, fields6] = await db.connection1.query(sql, [values_therapist_details]);
+  //   }
+
+    
+
+  // }
+  // 
+
+  console.log("Insertion complete");
+
+  async function getLanguageId(languages) {
+    
+    var education = "<ul><li>English</li><li>Mandarin Chinese</li></ul>";
+    education = education.replace("<ul><li>", "");
+    education = education.replace("</li></ul>", "");
+    const educationArray = education.split("</li><li>");
+
+    var array_education = [];
+
+
+    for (const records of educationArray) 
+    {
+      const [rows, fields] = await db.connection1.query('SELECT * FROM `languages` WHERE language_name = ?', [ records]);
+
+      if (rows.length > 0)
+      {
+        array_education.push(rows[0].id);
+      }else
+      {
+        var values = [[records,1,CurrentDate,CurrentDate ]];
+        var sql_languages =
+        "INSERT INTO languages (language_name,status,created_at,updated_at) VALUES ?";
+        const [rows1, fields1] = await db.connection1.query(sql_languages, [values]);
+        array_education.push(rows1.insertId);
+      }
+    }
+
+  }
 };

@@ -1,7 +1,11 @@
 const connect = require("../utils/connect");
+const moment = require("moment");
 
 module.exports = async () => {
+
+
   const db = await connect();
+  
   const [rows, fields] = await db.connection.execute(
     "SELECT * FROM `xalfyiBase_posts` WHERE `post_status` LIKE 'wc-completed' ORDER BY `ID` DESC"
   );
@@ -20,6 +24,109 @@ module.exports = async () => {
   const [rows4, fields4] = await db.connection1.execute(
     "SELECT * FROM `users`"
   );
+
+  const [rows5, fields5] = await db.connection.execute(
+    "SELECT * FROM `xalfyiBase_users`"
+  );
+
+// -- Coupons code starts --
+  const [rows10, fields10] = await db.connection.execute(
+    "SELECT * FROM `xalfyiBase_posts` WHERE `post_type` = 'shop_coupon' AND post_status = 'publish'"
+  );
+
+  const [rows12, fields12] = await db.connection.execute(
+    "SELECT * FROM `xalfyiBase_postmeta` ORDER BY `meta_id` DESC"
+  );
+
+  const [rows13, fields13] = await db.connection.execute(
+    "SELECT * FROM `xalfyiBase_wc_order_coupon_lookup` ORDER BY `id` DESC"
+  );
+
+
+  function getCouponIdFromOrderId(order_id) {
+    var coupon_ids = "";
+    var coupon_code = "";
+    rows13.map((result) => {
+      if (result.order_id == order_id)
+      {
+        coupon_ids = result.coupon_id;
+      }
+    });
+    coupons.map((result) => {
+      if (result.coupon_id == coupon_ids)
+      {
+        coupon_code = result.post_name;
+      }
+    });
+    return coupon_code;
+  }
+
+
+  var CurrentDate = moment().format("YYYY-MM-DD HH:mm:ss");
+
+  var coupons = [];
+  rows10.map((result) => {
+    let obj = {};
+    obj.post_name=result.post_name;
+    obj.coupon_id=result.ID;
+
+    rows12.map((result1) => {
+        if (result.ID == result1.post_id)
+        {
+            
+            if (result.ID == result1.post_id)
+            {
+                // date_expires
+                if (result1.meta_key == "date_expires") {
+                    var date_expir = moment.unix(result1.meta_value).format("YYYY-MM-DD");
+                    obj.date_expires=date_expir;
+                }
+
+                if (result1.meta_key == "usage_limit_per_user") {
+                    obj.usage_limit_per_user = result1.meta_value;
+                }
+
+                if (result1.meta_key == "usage_limit") {
+                    obj.usage_limit = result1.meta_value;
+                }
+
+                if (result1.meta_key == "coupon_amount") {
+                    obj.coupon_amount = result1.meta_value;
+                }
+
+                if (result1.meta_key == "discount_type") {
+                    obj.discount_type = result1.meta_value == "fixed_cart" ? "1" : "2";
+
+                    obj.currency = obj.discount_type == "fixed_cart" ? "5" : "";
+
+                    
+                }
+            }
+        }
+    });
+
+    
+    coupons.push(obj);
+
+  });
+
+  for (const obj of coupons) {
+    var values_tbl_coupon = [
+      [1, obj.discount_type,obj.post_name,obj.usage_limit_per_user,
+        obj.date_expires,obj.usage_limit,obj.coupon_amount,CurrentDate,CurrentDate]];
+
+
+    var sql_tbl_coupon =
+        "INSERT INTO tbl_coupon (created_by,discount_type,discount_code,per_user_limit,expiry_date,usage_limit,discount_value,created_at,updated_at) VALUES ?";
+
+    const [rows5, fields5] = await db.connection1.query(sql_tbl_coupon, [values_tbl_coupon]);
+
+  }
+  
+ 
+
+
+// -- Coupons code finish--
 
   const arr = [];
 
@@ -43,10 +150,26 @@ module.exports = async () => {
       if (value.appointment_id == value1.post_id) {
         if (value1.meta_key == "_appointment_timestamp") {
           arr[index].appointment_timestamp = value1.meta_value;
+          arr[index].appointment_timestamp_actualy_date = moment.unix(value1.meta_value).format("YYYY-MM-DD");
         }
 
         if (value1.meta_key == "_appointment_timeslot") {
           arr[index].appointment_timeslot = value1.meta_value;
+
+
+          const start_time_old = value1.meta_value.split("-")[0];
+          const end_time_old = value1.meta_value.split("-")[1];
+
+          const start_time = moment(start_time_old, 'HHmm').format('hh:mm A');
+
+          const end_time = moment(end_time_old, 'HHmm').format('hh:mm A');
+
+          arr[index].start_time = start_time;
+          arr[index].end_time = end_time;
+        }
+
+        if (value1.meta_key == "_appointment_user") {
+          arr[index].appointment_user_id = value1.meta_value;
         }
       }
     });
@@ -75,14 +198,24 @@ module.exports = async () => {
   });
 
   arr.map((value, index) => {
-    rows3.map((value1, index1) => {
-      if (value.booked_wc_appointment_cal_name == value1.post_title) {
-        value.therapist_post_id = value1.ID;
-        rows4.map((value2, index2) => {
-          if (value2.post_id == value1.ID) {
+    rows5.map((value1, index1) => {
+      if (value.booked_wc_appointment_cal_name == value1.display_name) {
+
+        value.therapist_email = value1.user_email;
+        value.therapist_user_login = value1.user_login;
+        
+      rows4.map((value2, index2) => {
+          if (value2.email == value.therapist_email) {
             value.therapist_id = value2.id;
           }
         });
+
+        rows4.map((value2, index2) => {
+          if (value2.post_id == value.appointment_user_id) {
+            value.client_id = value2.id;
+          }
+        });
+
       }
     });
   });
@@ -116,15 +249,95 @@ module.exports = async () => {
           value2.city = value1.meta_value;
         }
         value2.city = value2.city ? value2.city : "";
-        value2.service_amount = value2.total_amount;
-        value2.amount = value2.total_amount - value2.discount_amount;
+
+        
         value2.order_status = 1;
         value2.service_id_fk = 1;
         value2.time_zone = "Asia/Singapore";
         value2.country_id_fk = 5;
+        var val = Math.floor(1000 + Math.random() * 9000);
+        value2.session_id = val;
+
       }
     });
   });
 
-  console.log(arr);
+
+  // printFiles();
+
+
+  // async function printFiles () {  
+    for (const records of arr) {
+
+      // therapist_id
+      // appointment_timestamp_actualy_date
+
+
+      
+      
+
+      const [rows9, fields9] = await db.connection1.query('Select * from tbl_avalability WHERE slot_date = ?', [ "2021-08-15"]);
+
+
+      var tbl_avalability_id = "";
+
+      if (rows9.length > 0)
+      {
+        tbl_avalability_id = rows9[0].id;
+      }else
+      {
+
+        var values_tbl_avalability = [
+          [records.therapist_id, records.appointment_timestamp_actualy_date,CurrentDate,CurrentDate]];
+
+        var sql_tbl_avalability =
+        "INSERT INTO tbl_avalability (therapist_id_fk,slot_date,created_at,updated_at) VALUES ?";
+
+        const [rows5, fields5] = await db.connection1.query(sql_tbl_avalability, [values_tbl_avalability]);
+        tbl_avalability_id = rows5.id;
+      }
+
+
+      var values_tbl_avalability_time_slots = [
+        [tbl_avalability_id,records.start_time,records.end_time,0,1,0,0,0,1,0,CurrentDate,CurrentDate]];
+
+      var sql_values_tbl_avalability = 
+      "INSERT INTO tbl_avalability_time_slots (avalability_id_fk,time_slot,end_time_slot,audio,video,textbasedchat,inperson,homevisit,is_booked,is_close,created_at,updated_at) VALUES ?";
+
+      const [rows6, fields6] = await db.connection1.query(sql_values_tbl_avalability, [values_tbl_avalability_time_slots]);
+
+      var slot_id_fk = rows6.insertId;
+
+      var totalAmount = parseFloat(records.total_amount) + parseFloat(records.discount_amount);
+
+
+      records.amount = parseFloat(records.total_amount).toFixed(2);
+
+      records.service_amount = parseFloat(totalAmount).toFixed(2);
+      records.total_amount = parseFloat(totalAmount).toFixed(2);
+
+
+      var values_tbl_order = [[records.therapist_id,records.client_id,1,1,5,records.transaction_id,records.amount,records.total_amount,records.discount_amount,records.service_amount,0,records.zip_code,records.phone_no,records.country_id_fk,records.city,"",records.order_status,records.time_zone,CurrentDate,CurrentDate,getCouponIdFromOrderId(records.post_id)]];
+
+      var sql_tbl_order = 
+      "INSERT INTO tbl_order (therapist_id_fk,client_id_fk,service_id_fk,medium_id_fk,country_id_fk,transaction_id,amount,total_amount,discount_amount,service_amount,medium_amount,zip_code,phone_no,country,city,state,order_status,time_zone,created_at,updated_at,discount_coupon) VALUES ?";
+
+      const [rows7, fields7] = await db.connection1.query(sql_tbl_order, [values_tbl_order]);
+
+      var order_id_pk = rows7.insertId;
+
+      var values_tbl_order = [[records.session_id,order_id_pk,slot_id_fk,1,1,3,CurrentDate,CurrentDate]];
+
+      var sql_tbl_order = 
+      "INSERT INTO tbl_order_session (session_id,order_id_fk,slot_id_fk,no_show_by_therapist,no_show_by_client,session_status,created_at,updated_at) VALUES ?";
+
+      const [rows8, fields8] = await db.connection1.query(sql_tbl_order, [values_tbl_order]);
+
+
+      // break;
+
+    }
+  // }
+  
+    console.log("Looo krlo baat");
 };

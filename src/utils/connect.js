@@ -5,14 +5,14 @@ module.exports = async () => {
     host: "localhost",
     user: "root",
     password: "",
-    database: "tyho_old",
+    database: "old_tyho",
   });
 
   var connection1 = mysql.createPool({
     host: "localhost",
     user: "root",
     password: "",
-    database: "tyho",
+    database: "tyho_dev_21jan",
   });
 
   return { connection, connection1 };

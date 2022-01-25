@@ -17,6 +17,7 @@
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
     "node-html-parser": "^5.2.0",
-    "nodemon": "^2.0.15"
+    "nodemon": "^2.0.15",
+    "php-serialization": "^0.0.4"
   }
 }

@@ -1,6 +1,7 @@
 const connect = require("../utils/connect");
 const moment = require("moment");
 var unserialize=require("php-serialization").unserialize;
+var HTMLParser = require('node-html-parser');
 
 module.exports = async () => {
   const db = await connect();
@@ -61,19 +62,46 @@ module.exports = async () => {
   );
 
   
+
+  const [rows100, fields100] = await db.connection1.execute(
+    "TRUNCATE TABLE users"
+  );
+
+  const [rows101, fields101] = await db.connection1.execute(
+    "TRUNCATE TABLE therapist_details"
+  );
+
+  const [rows102, fields102] = await db.connection1.execute(
+    "TRUNCATE TABLE applications"
+  );
+
+  const [rows103, fields103] = await db.connection1.execute(
+    "TRUNCATE TABLE languages"
+  );
+
+  const [rows104, fields104] = await db.connection1.execute(
+    "TRUNCATE TABLE tbl_wallet"
+  );
+
+  
   var CurrentDate = moment().format("YYYY-MM-DD HH:mm:ss");
 
-  async function getLanguageId() {
+  async function getLanguageId(languages) {
     
-    var education = "<ul><li>English</li><li>Mandarin Chinese</li></ul>";
-    education = education.replace("<ul><li>", "");
-    education = education.replace("</li></ul>", "");
-    const educationArray = education.split("</li><li>");
+    const root = HTMLParser.parse(languages);
 
+
+ 
     var array_education = [];
-    
-    for (const records of educationArray) 
-    {
+    for (const iterator of root.querySelector('ul').childNodes) {
+  
+      var records = iterator.text;
+
+      if(records == "")
+      {
+        continue;
+      }
+
       const [rows, fields] = await db.connection1.query('SELECT * FROM `languages` WHERE language_name = ?', [ records]);
 
       if (rows.length > 0)
@@ -88,8 +116,17 @@ module.exports = async () => {
         array_education.push(rows1.insertId);
       }
     }
+
+    array_education = remove_duplicates_es6(array_education);
     return array_education.join();
   }
+
+  function remove_duplicates_es6(arr) {
+    let s = new Set(arr);
+    let it = s.values();
+    return Array.from(it);
+}
+
 
   async function getCommunicationPref(value) {
     var array = [];
@@ -241,6 +278,15 @@ module.exports = async () => {
   // console.log(arr);
   // return;
 
+  function getPostId(user_login) {
+
+    for (const iterator of arr) {
+      if (iterator[6] == user_login) {
+        return iterator[0];
+      }
+    }
+  }
+  
   let ids = [];
   let userRecords = [];
   arr.map((val, i) => {
@@ -248,33 +294,43 @@ module.exports = async () => {
       if (val[6] == val1.user_login) {
         ids.push(val1.ID);
         val.push(val1.ID, val1.user_email);
-        val1.post_id = val[0];
+        
       }
-      userRecords.push(val1);
+      // userRecords.push(val1);
     });
   });
 
-  // console.log(userRecords);
+  // console.log(arr);
   // return;
 
   let user = [];
-  userRecords.map((val, i) => {
+  rows3.map((val, i) => {
     let ar = [];
     if (ids.includes(val.ID)) {
       ar.push(2);
     } else {
       ar.push(3);
     }
-    ar.push(val.post_id,val.ID, val.user_login, val.user_email, "+65");
+
+    // if(val.post_id !== undefined)
+    // {
+    //   ar.push(val.post_id,val.ID, val.user_login, val.user_email, "+65");
+    // }else
+    // {
+      ar.push(val.ID, val.user_login, val.user_email, "+65");
+    // }
     user.push(ar);
   });
 
   // console.log(user);
   // return;
 
+  var WalletArray = [];
+
+
   user.map((val, i) => {
     rows4.map((val1, i1) => {
-      if (val[2] == val1.user_id) {
+      if (val[1] == val1.user_id) {
         if (val1.meta_key == "first_name") {
           val.push(val1.meta_value);
         }
@@ -284,9 +340,20 @@ module.exports = async () => {
         if (val1.meta_key == "middlename") {
           val.push(val1.meta_value);
         }
+
+        if (val1.meta_key == "_uw_balance") {
+
+          var obj = {};
+          obj.user_id = val1.user_id;
+          obj.wallet_balance = val1.meta_value;
+          WalletArray.push(obj);
+        }
       }
     });
-    if (val.length == 8) {
+
+    // console.log(val.length);
+    // return;
+    if (val.length == 7) {
       val.push("");
     }
   });
@@ -294,28 +361,59 @@ module.exports = async () => {
   
 
 
-  // console.log(user);
+function getWalletAmount(user_id) {
+  
+  for (const iterator of WalletArray) {
+    
+    if (iterator.user_id == user_id)
+    {
+      return iterator.wallet_balance;
+    }
+  }
+}
+
+
+
+  // console.log(user.length);
+
+  // return;
 
   for (var records of user) 
   {
     // console.log(records);
 
+
+
     // return;
 
     
 
-    var post_id = records[1];
+    var post_id = getPostId(records[2]) ;
     var email = records[4];
 
-    const index = records.indexOf(post_id);
-    if (index > -1) {
-      records.splice(index, 1); // 2nd parameter means remove one item only
-    }
+    // console.log(records);
+
+    
+
+    // if (post_id !== undefined)
+    // {
+    //   console.log(post_id);
+    // }
+    // return;
+
+    // console.log(post_id);
+    // return;
+
+    // const index = records.indexOf(post_id);
+    // if (index > -1) {
+    //   records.splice(index, 1); // 2nd parameter means remove one item only
+    // }
 
     // $2y$10$I3Q13uNA/Cjc.47N7lE3MexM3I7sn3Yiqo55vBwwSMg4EvoXO9PZO
 
     // array = [2, 9]
     // console.log(records); 
+    // return;
 
 
 
@@ -344,18 +442,30 @@ module.exports = async () => {
     {
       await insertApplicationForm(post_id,user_id,email);
       
-      var values_therapist_details = [[1,1,5,user_id,"Asia/Singapore",CurrentDate,CurrentDate]];
+      var values_therapist_details = [[5,user_id,"Asia/Singapore",CurrentDate,CurrentDate]];
       var sql =
-      "INSERT INTO therapist_details (service_id_fk,medium_id_fk,country_id_fk,therapist_id_FK,my_timezone,created_at,updated_at) VALUES ?";
+      "INSERT INTO therapist_details (country_id_fk,therapist_id_FK,my_timezone,created_at,updated_at) VALUES ?";
       const [rows6, fields6] = await db.connection1.query(sql, [values_therapist_details]);
-    }
+    }else
+    {
+      var walletAmount = getWalletAmount(records[1]);
+
+      if(parseFloat(walletAmount) > 0)
+      {
+        console.log("Wallet Amount :: "+walletAmount+" Email Id ::"+email)
+        var expiry_date = moment().add(2, 'years').format("YYYY-MM-DD");
+        var values_therapist_details = [[user_id,5,expiry_date,walletAmount,15,"Credit",CurrentDate,walletAmount,walletAmount,"Asia/Singapore",CurrentDate,CurrentDate]];
+        var sql =
+        "INSERT INTO tbl_wallet (client_id_fk,country_id_fk,expiry_date,amount,type_for_text,type,date,amount_left,balance,time_zone,created_at,updated_at) VALUES ?";
+        const [rows7, fields7] = await db.connection1.query(sql, [values_therapist_details]);
+      }
 
     
 
-  }
+    }
   // 
-
-  // console.log("Insertion complete");
+  }
+  console.log("Insertion complete");
 
   
 };

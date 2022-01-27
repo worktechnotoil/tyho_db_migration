@@ -4,8 +4,10 @@ const moment = require("moment");
 module.exports = async () => {
 
 
+
   const db = await connect();
   
+
   const [rows, fields] = await db.connection.execute(
     "SELECT * FROM `xalfyiBase_posts` WHERE `post_status` LIKE 'wc-completed' ORDER BY `ID` DESC"
   );
@@ -110,20 +112,27 @@ module.exports = async () => {
 
   });
 
+  const [rows104, fields104] = await db.connection1.query('Delete from tbl_coupon');
+
+  console.log("Deleted old tbl_coupon");
+
+  // console.log(coupons);
+  // return;
+
   for (const obj of coupons) {
     var values_tbl_coupon = [
-      [1, obj.discount_type,obj.post_name,obj.usage_limit_per_user,
+      [1,1, obj.discount_type,obj.post_name,obj.usage_limit_per_user,
         obj.date_expires,obj.usage_limit,obj.coupon_amount,CurrentDate,CurrentDate]];
 
 
     var sql_tbl_coupon =
-        "INSERT INTO tbl_coupon (created_by,discount_type,discount_code,per_user_limit,expiry_date,usage_limit,discount_value,created_at,updated_at) VALUES ?";
+        "INSERT INTO tbl_coupon (issued_by,created_by,discount_type,discount_code,per_user_limit,expiry_date,usage_limit,discount_value,created_at,updated_at) VALUES ?";
 
     const [rows5, fields5] = await db.connection1.query(sql_tbl_coupon, [values_tbl_coupon]);
 
+    console.log(rows5.insertId)
   }
   
- 
 
 
 // -- Coupons code finish--
@@ -147,7 +156,12 @@ module.exports = async () => {
 
   arr.map((value, index) => {
     rows1.map((value1, index2) => {
+
       if (value.appointment_id == value1.post_id) {
+
+        arr[index].appointment_id = value.appointment_id;
+        arr[index].post_id = value1.post_id;
+
         if (value1.meta_key == "_appointment_timestamp") {
           arr[index].appointment_timestamp = value1.meta_value;
           arr[index].appointment_timestamp_actualy_date = moment.unix(value1.meta_value).format("YYYY-MM-DD");
@@ -265,18 +279,40 @@ module.exports = async () => {
 
   // printFiles();
 
+  console.log("Mapping done deleting of old data started");
+
+  const [rows100, fields100] = await db.connection1.query('TRUNCATE TABLE tbl_avalability ');
+
+  console.log("Deleted old tbl_avalability");
+
+  const [rows101, fields101] = await db.connection1.query('TRUNCATE TABLE tbl_avalability_time_slots ');
+
+  console.log("Deleted old tbl_avalability_time_slots");
+
+  const [rows102, fields102] = await db.connection1.query('TRUNCATE TABLE tbl_order ');
+
+  console.log("Deleted old tbl_order");
+
+  const [rows103, fields103] = await db.connection1.query('TRUNCATE TABLE tbl_order_session ');
+
+  console.log("Deleted old tbl_order_session");
+
+  
+
+
+  console.log("Deletion completed insertion started");
 
   // async function printFiles () {  
     for (const records of arr) {
 
-      // therapist_id
-      // appointment_timestamp_actualy_date
 
 
+      if (records.appointment_timestamp_actualy_date === undefined)
+      {
+        continue;
+      }
       
-      
-
-      const [rows9, fields9] = await db.connection1.query('Select * from tbl_avalability WHERE slot_date = ?', [ "2021-08-15"]);
+      const [rows9, fields9] = await db.connection1.query('Select * from tbl_avalability WHERE slot_date = ?', [ records.appointment_timestamp_actualy_date]);
 
 
       var tbl_avalability_id = "";
@@ -294,10 +330,11 @@ module.exports = async () => {
         "INSERT INTO tbl_avalability (therapist_id_fk,slot_date,created_at,updated_at) VALUES ?";
 
         const [rows5, fields5] = await db.connection1.query(sql_tbl_avalability, [values_tbl_avalability]);
-        tbl_avalability_id = rows5.id;
+        tbl_avalability_id = rows5.insertId;
       }
 
 
+      
       var values_tbl_avalability_time_slots = [
         [tbl_avalability_id,records.start_time,records.end_time,0,1,0,0,0,1,0,CurrentDate,CurrentDate]];
 
@@ -326,10 +363,10 @@ module.exports = async () => {
 
       var order_id_pk = rows7.insertId;
 
-      var values_tbl_order = [[records.session_id,order_id_pk,slot_id_fk,1,1,3,CurrentDate,CurrentDate]];
+      var values_tbl_order = [[records.appointment_timestamp_actualy_date,records.session_id,order_id_pk,slot_id_fk,1,1,0,CurrentDate,CurrentDate]];
 
       var sql_tbl_order = 
-      "INSERT INTO tbl_order_session (session_id,order_id_fk,slot_id_fk,no_show_by_therapist,no_show_by_client,session_status,created_at,updated_at) VALUES ?";
+      "INSERT INTO tbl_order_session (booking_date,session_id,order_id_fk,slot_id_fk,no_show_by_therapist,no_show_by_client,session_status,created_at,updated_at) VALUES ?";
 
       const [rows8, fields8] = await db.connection1.query(sql_tbl_order, [values_tbl_order]);
 

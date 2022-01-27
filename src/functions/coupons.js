@@ -12,33 +12,7 @@ module.exports = async () => {
  
 
 
-  async function getLanguageId() {
-    
-    var education = "<ul><li>English</li><li>Mandarin Chinese</li></ul>";
-    education = education.replace("<ul><li>", "");
-    education = education.replace("</li></ul>", "");
-    const educationArray = education.split("</li><li>");
-
-    var array_education = [];
-    
-    for (const records of educationArray) 
-    {
-      const [rows, fields] = await db.connection1.query('SELECT * FROM `languages` WHERE language_name = ?', [ records]);
-
-      if (rows.length > 0)
-      {
-        array_education.push(rows[0].id);
-      }else
-      {
-        var values = [[records,1,CurrentDate,CurrentDate ]];
-        var sql_languages =
-        "INSERT INTO languages (language_name,status,created_at,updated_at) VALUES ?";
-        const [rows1, fields1] = await db.connection1.query(sql_languages, [values]);
-        array_education.push(rows1.insertId);
-      }
-    }
-    return array_education.join();
-  }
+  
 
 getCommunicationPref('a:2:{i:0;s:5:"Audio";i:1;s:5:"Video";}');
 async function getCommunicationPref(value) {

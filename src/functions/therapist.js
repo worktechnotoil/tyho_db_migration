@@ -37,6 +37,27 @@ module.exports = async () => {
 
   const users = ["first-name", "middle-name", "last-name", "phone-number"];
 
+  var therapistArray = [
+    [ 2108, '+65', '2', 'Alice', 'Ho', 'Tan', '91502691' ],
+    [ 2117, '+65', '2', 'Alyssa', '', 'Fernandez', '92270011' ],
+    [ 2124, '+65', '2', 'Edmund', '', 'Chong', '96729150' ],
+    [ 2505, '+65', '2', 'Karen', '', 'Chok', '82222358' ],
+    [ 2560, '+65', '2', 'Lira', '', 'Low', '0788243906' ],
+    [ 2998, '+65', '2', 'Rashmi', '', 'Kunzru', '88785532' ],
+    [ 5957, '+65', '2', 'Alicia', '', 'Prescott', '431245764' ],
+    [ 7155, '+65', '2', 'Desieree', '', 'Makalew', '91911075' ],
+    [ 7654, '+65', '2', 'Alexandra', '', 'Oh', '81265787' ],
+    [ 11949, '+65', '2', 'Ser', '', 'Fee', '87761420' ],
+    [ 12205, '+65', '2', 'Punitha', '', 'Gunasegaran', '97985232' ],
+    [ 13366, '+65', '2', 'Joseph', '', 'Quek', '91786090' ],
+    [ 15355, '+65', '2', 'Priyahnisha', '', 'N', '97769067' ],
+    [ 18914, '+65', '2', 'Jeanette', '', 'Houmayune', '98736150' ],
+    [ 19968, '+65', '2', 'Beena', '', 'D Raj', '90466269' ],
+    [ 20326, '+65', '2', 'Kayden', '', 'Sharon Perera', '91266276' ],
+    [ 21195, '+65', '2', 'Li Nah', '', 'Loh', '93868999' ],
+    [ 23557, '+65', '2', 'Rathi', '', 'Lieberum', '91704019' ]
+  ];
+  
   const users1 = [
     { key: "first-name", ch: "first_name" },
     { key: "middle-name", ch: "middle_name" },
@@ -83,6 +104,13 @@ module.exports = async () => {
     "TRUNCATE TABLE tbl_wallet"
   );
 
+  const [rows105, fields105] = await db.connection1.execute(
+    "TRUNCATE TABLE tbl_avalability"
+  );
+
+  const [rows106, fields106] = await db.connection1.execute(
+    "TRUNCATE TABLE tbl_avalability_time_slots"
+  );
   
   var CurrentDate = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -127,6 +155,80 @@ module.exports = async () => {
     return Array.from(it);
 }
 
+async function saveTherapistAvailability(value,therapist_id)
+{
+    for (let index = 0; index < 91; index = index + 1) {
+        var threeMonthAfterDate = moment().tz("Asia/Singapore").add(index, 'day').format('YYYY-MM-DD');
+    
+        var dateFormat = moment().tz("Asia/Singapore").add(index, 'day').format('ddd')+"-details"
+    
+        var therapistAvai = await getTherapistAvailability(value,therapist_id,dateFormat);
+    
+        // console.log(therapistAvai);
+
+        var values_tbl_avalability = [
+            [therapist_id, threeMonthAfterDate,CurrentDate,CurrentDate]];
+  
+          var sql_tbl_avalability =
+          "INSERT INTO tbl_avalability (therapist_id_fk,slot_date,created_at,updated_at) VALUES ?";
+  
+          const [rows5, fields5] = await db.connection1.query(sql_tbl_avalability, [values_tbl_avalability]);
+          var tbl_avalability_id = rows5.insertId;
+
+        if (therapistAvai !== undefined)
+        {
+          for (const iterator of therapistAvai.timeslots) {
+
+            var values_tbl_avalability_time_slots = [
+                [tbl_avalability_id,iterator.start_time,iterator.end_time,0,1,0,0,0,1,0,CurrentDate,CurrentDate]];
+        
+            var sql_values_tbl_avalability = 
+            "INSERT INTO tbl_avalability_time_slots (avalability_id_fk,time_slot,end_time_slot,audio,video,textbasedchat,inperson,homevisit,is_booked,is_close,created_at,updated_at) VALUES ?";
+    
+            const [rows6, fields6] = await db.connection1.query(sql_values_tbl_avalability, [values_tbl_avalability_time_slots]);
+        
+          }
+        }
+
+        
+        
+    }
+}
+
+
+async function getTherapistAvailability(value,therapist_id,day)
+{
+
+    var result=unserialize(value);
+    for(var attributename in result.__attr__){
+        if (attributename == day)
+        {
+            // console.log(attributename);
+            var timeObj ={};
+            timeObj.day  = day;
+            var timeslots = [];
+
+            for (var key in result[attributename].__attr__){
+
+                var timeSlotsObj ={};
+                const start_time_old = key.split("-")[0];
+                const end_time_old = key.split("-")[1];
+
+                const start_time = moment(start_time_old, 'HHmm').format('hh:mm A');
+
+                const end_time = moment(end_time_old, 'HHmm').format('hh:mm A');
+                
+                timeSlotsObj.start_time = start_time;
+                timeSlotsObj.end_time = end_time;
+                timeslots.push(timeSlotsObj);
+                // console.log(key);
+            }
+            timeObj.timeslots = timeslots;
+            return timeObj;
+            break;
+        }
+    }
+}
 
   async function getCommunicationPref(value) {
     var array = [];
@@ -145,6 +247,8 @@ module.exports = async () => {
   }
 
   var applicationForm = [];
+  var intakeFormData = [];
+
 
   // console.log(rows1);
   // return;
@@ -199,14 +303,23 @@ module.exports = async () => {
           applicationFormobj.phone_number = result1.meta_value;
         }
 
-       
-        if (result1.meta_key == "languages")
+        if (result1.meta_key == "calendar_shortcode")
         {
-          var languages =  await getLanguageId(result1.meta_value);
-          applicationFormobj.languages = languages;
-          // obj.push(languages);
-        }
+          var calender = result1.meta_value;
+          calender = calender.split("=")[1];
+          calender = calender.replace("]", "");
 
+          const [rows, fields] = await db.connection.query("SELECT option_value FROM `xalfyiBase_options` WHERE `option_name` LIKE '%booked_defaults_"+calender+"%' ORDER BY `xalfyiBase_options`.`option_name` ASC");
+
+          if (rows.length > 0)
+          {
+            applicationFormobj.calendar_shortcode = rows[0].option_value;
+          }else
+          {
+            applicationFormobj.calendar_shortcode = "";
+          }
+        }
+        
         if (result1.meta_key == "languages")
         {
           var languages =  await getLanguageId(result1.meta_value);
@@ -251,12 +364,37 @@ module.exports = async () => {
           applicationFormobj.length_of_experience = result1.meta_value;
         }
 
+        if (result1.meta_key == "length-of-experience")
+        {
+          applicationFormobj.length_of_experience = result1.meta_value;
+        }
+
+       
+
+
         
         
       }
     }
     applicationForm.push(applicationFormobj);
     arr.push(obj);
+  }
+
+
+  // console.log(applicationForm.length);
+
+  // return;
+
+
+  async function getUserType(post_id) {
+    for (const result1 of applicationForm) 
+    {
+      if (result1.post_id == post_id)
+      {
+       return 2; 
+      }
+    }
+    return 3;
   }
 
   async function insertApplicationForm(post_id,user_id,email) {
@@ -271,16 +409,48 @@ module.exports = async () => {
         var sql =
         "INSERT INTO applications (therapist_id_FK,language_id_fk,first_name,middle_name,last_name,length_of_experience,medium_are_you_able_to_use_for_counselling,services_are_you_able_to_provide,approximate_availability,time_zone,created_at,updated_at,email) VALUES ?";
         const [rows6, fields6] = await db.connection1.query(sql, [values_therapist_details]);
+
+        // console.log(result1.calendar_shortcode);
+
+        try {
+          await saveTherapistAvailability(result1.calendar_shortcode.toString(),user_id);
+        } catch (error) {
+          console.error(error);
+          console.log("user_id :: "+user_id+" result1.first_name :: "+result1.first_name+"result1.calendar_shortcode :: "+result1.calendar_shortcode );
+
+          // expected output: ReferenceError: nonExistentFunction is not defined
+          // Note - error messages will vary depending on browser
+        }
+
+        
       }
     }
   }
 
-  // console.log(arr);
+  async function insertIntakeForm(match_id,user_id) {
+    for (const result1 of intakeFormData) 
+    {
+      if (result1.user_id == match_id)
+      {
+        var values_intake_details = [[
+          user_id,result1.age,result1.gender,result1.emergency_contact_person_details_name,result1.emergency_contact_person_details_relationship_with_you,
+          result1.emergency_contact_person_details_phone_number,result1.current_relationship,result1.your_occupation,
+          result1.highest_educational_qualifications,result1.previously_session,result1.last_consulted_on,
+          result1.currently_consulting,result1.what_they_are_helping,result1.specific_goal,CurrentDate,CurrentDate]];
+
+        var sql =
+        "INSERT INTO intakes (user_id,age,gender,name,relationship,mobile,your_relationship_status,your_occupation,highest_qualifications,previously_had_any_sessions_with_anyone,if_yes_last_consulted,are_you_currently_consulting_with_anyone,if_yes_they_are_helping_you,share_personal_and_professional_goals,created_at,updated_at) VALUES ?";
+        const [rows6, fields6] = await db.connection1.query(sql, [values_intake_details]);
+      }
+    }
+  }
+
+  // console.log(arr.length);
   // return;
 
   function getPostId(user_login) {
 
-    for (const iterator of arr) {
+    for (const iterator of therapistArray) {
       if (iterator[6] == user_login) {
         return iterator[0];
       }
@@ -329,6 +499,9 @@ module.exports = async () => {
 
 
   user.map((val, i) => {
+    let intakeFormobj = {};
+    intakeFormobj.user_id = val[1];
+
     rows4.map((val1, i1) => {
       if (val[1] == val1.user_id) {
         if (val1.meta_key == "first_name") {
@@ -348,8 +521,79 @@ module.exports = async () => {
           obj.wallet_balance = val1.meta_value;
           WalletArray.push(obj);
         }
+
+        if (val1.meta_key == "gender")
+        {
+          intakeFormobj.gender = val1.meta_value;
+        }
+
+        if (val1.meta_key == "age")
+        {
+          intakeFormobj.age = val1.meta_value;
+        }
+
+        if (val1.meta_key == "current_relationship")
+        {
+          intakeFormobj.current_relationship = val1.meta_value;
+        }
+
+        if (val1.meta_key == "your_occupation")
+        {
+          intakeFormobj.your_occupation = val1.meta_value;
+        }
+
+        if (val1.meta_key == "highest_educational_qualifications")
+        {
+          intakeFormobj.highest_educational_qualifications = val1.meta_value;
+        }
+
+        if (val1.meta_key == "emergency_contact_person_details_name")
+        {
+          intakeFormobj.emergency_contact_person_details_name = val1.meta_value;
+        }
+
+        if (val1.meta_key == "emergency_contact_person_details_phone_number")
+        {
+          intakeFormobj.emergency_contact_person_details_phone_number = val1.meta_value;
+        }
+
+        if (val1.meta_key == "emergency_contact_person_details_relationship_with_you")
+        {
+          intakeFormobj.emergency_contact_person_details_relationship_with_you = val1.meta_value;
+        }
+
+        if (val1.meta_key == "previously_session")
+        {
+          intakeFormobj.previously_session = val1.meta_value;
+        }
+
+        if (val1.meta_key == "last_consulted_on")
+        {
+          intakeFormobj.last_consulted_on = val1.meta_value;
+        }
+
+        if (val1.meta_key == "currently_consulting")
+        {
+          intakeFormobj.currently_consulting = val1.meta_value;
+        }
+
+        if (val1.meta_key == "what_they_are_helping")
+        {
+          intakeFormobj.what_they_are_helping = val1.meta_value;
+        }
+
+        if (val1.meta_key == "specific_goal")
+        {
+          intakeFormobj.specific_goal = val1.meta_value;
+        }
+
+
+        
+        
       }
     });
+
+    intakeFormData.push(intakeFormobj);
 
     // console.log(val.length);
     // return;
@@ -380,7 +624,7 @@ function getWalletAmount(user_id) {
 
   for (var records of user) 
   {
-    // console.log(records);
+    console.log(records);
 
 
 
@@ -389,6 +633,8 @@ function getWalletAmount(user_id) {
     
 
     var post_id = getPostId(records[2]) ;
+
+    // return;
     var email = records[4];
 
     // console.log(records);
@@ -415,7 +661,14 @@ function getWalletAmount(user_id) {
     // console.log(records); 
     // return;
 
+    
+    records[0] = await getUserType(post_id);
 
+    var user_type = records[0];
+
+    console.error("user_type :: "+user_type+" post_id :: "+post_id);
+    // return;
+    
 
     records[records.length] = CurrentDate;
     records[records.length] = CurrentDate;
@@ -429,7 +682,8 @@ function getWalletAmount(user_id) {
     const [rows5, fields5] = await db.connection1.query(sql, [[records]]);
 
     var user_id = rows5.insertId;
-    var user_type = records[0];
+    
+    var old_data_user_id = records[1];
 
     const firstName = records[5];
    
@@ -448,11 +702,14 @@ function getWalletAmount(user_id) {
       const [rows6, fields6] = await db.connection1.query(sql, [values_therapist_details]);
     }else
     {
+
+      await insertIntakeForm(old_data_user_id,user_id);
+
       var walletAmount = getWalletAmount(records[1]);
 
       if(parseFloat(walletAmount) > 0)
       {
-        console.log("Wallet Amount :: "+walletAmount+" Email Id ::"+email)
+        // console.log("Wallet Amount :: "+walletAmount+" Email Id ::"+email)
         var expiry_date = moment().add(2, 'years').format("YYYY-MM-DD");
         var values_therapist_details = [[user_id,5,expiry_date,walletAmount,15,"Credit",CurrentDate,walletAmount,walletAmount,"Asia/Singapore",CurrentDate,CurrentDate]];
         var sql =

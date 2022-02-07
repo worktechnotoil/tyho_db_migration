@@ -55,8 +55,45 @@ module.exports = async () => {
     [ 19968, '+65', '2', 'Beena', '', 'D Raj', '90466269' ],
     [ 20326, '+65', '2', 'Kayden', '', 'Sharon Perera', '91266276' ],
     [ 21195, '+65', '2', 'Li Nah', '', 'Loh', '93868999' ],
-    [ 23557, '+65', '2', 'Rathi', '', 'Lieberum', '91704019' ]
+    [ 23557, '+65', '2', 'Rathi', '', 'Lieberum', '91704019' ],
+    [ 1517, '+65', '2', 'Michael', '', 'Thong', '81682985' ],
+    [ 57, '+65', '2', 'Darren', '', 'Lim', '96677264' ],
+    [ 55, '+65', '2', 'Elisa', '', 'Kang', '94308666' ],
   ];
+
+  // {"name":"Michael Thong","mobile":"81682985","email":"thong.michael@gmail.com"},//Disabled therapist
+  //   {"name":"Darren Lim","mobile":"96677264","email":"dwklim@gmail.com"},//Disabled therapist
+  //   {"name":"Elisa Kang","mobile":"94308666","email":"elisa.kang@gmail.com"},//Disabled therapist
+
+
+  // console.log(therapistArray.length);
+  // return;
+  // var therapistArray = [
+  //   {"name":"Lira Low","mobile":"0788243906","email":"liralow@gmail.com"},
+  //   {"name":"Li Nah Loh","mobile":"93868999","email":"healingmoonwarrior@gmail.com"},
+  //   {"name":"Kayden Sharon Perera","mobile":"91266276","email":"kaydensp@gmail.com"},
+  //   {"name":"Alexandra Oh","mobile":"81265787","email":"lextremelybalanced@gmail.com"},
+  //   {"name":"Alyssa Fernandez","mobile":"92270011","email":"alyssa.rose@gmail.com"},
+  //   {"name":"Ser Fee","mobile":"87761420","email":"serfee@re-narrate.com"},
+  //   {"name":"Jeanette Houmayune","mobile":"98736150","email":"jeanette.houmayune@gmail.com"},
+  //   {"name":"Priyahnisha N","mobile":"97769067","email":"resetright@gmail.com"},
+  //   {"name":"Beena D R","mobile":"90466269","email":"beena7_2000@yahoo.com.sg"},
+  //   {"name":"Rashmi Kunzru","mobile":"88785532","email":"rashmi@pathwayscounselling.co"},
+  //   {"name":"Joseph Quek","mobile":"91786090","email":"josephquek11@gmail.com"},
+  //   {"name":"Desieree Makalew","mobile":"91911075","email":"desieree@gmail.com"},
+  //   {"name":"Edmund Chong","mobile":"96729150","email":"edmund@healingspace.sg"},
+  //   {"name":"Punitha Gunasegaran","mobile":"97985232","email":"punitha51@hotmail.com"},
+  //   {"name":"Karen Chok","mobile":"82222358","email":"karen.integrow@gmail.com"},
+  //   {"name":"Alicia Prescott","mobile":"431245764","email":"prescott.alicia@gmail.com"},
+  //   {"name":"Alice Ho Tan","mobile":"91502691","email":"alice.integrow@gmail.com"},
+  //   {"name":"Michael Thong","mobile":"81682985","email":"thong.michael@gmail.com"},//Disabled therapist
+  //   {"name":"Rathi Lieberum","mobile":"91704019","email":"rathidavy@gmail.com"},
+  //   {"name":"Darren Lim","mobile":"96677264","email":"dwklim@gmail.com"},//Disabled therapist
+  //   {"name":"Elisa Kang","mobile":"94308666","email":"elisa.kang@gmail.com"},//Disabled therapist
+  // ];
+
+
+
   
   const users1 = [
     { key: "first-name", ch: "first_name" },
@@ -112,6 +149,19 @@ module.exports = async () => {
     "TRUNCATE TABLE tbl_avalability_time_slots"
   );
   
+  const [rows1063, fields1063] = await db.connection1.execute(
+    "TRUNCATE TABLE onboardings"
+  );
+
+  const [rows10623, fields12063] = await db.connection1.execute(
+    "TRUNCATE TABLE intakes"
+  );
+
+  var sql =
+    "INSERT INTO users (usertype,user_id,first_name,last_name,email,password,time_zone,post_id) VALUES ?";
+  
+  const [rows5, fields5] = await db.connection1.query(sql, [[["1","sup_1","Super","Admin","shilpa+1@talkyourheartout.com","$2y$10$swQ8fcZPsIZvf2lehH76dufqtoLehOI.nej2a7Ozr.7RrfWTZ49v2","Asia/Singapore",""]]]);
+  
   var CurrentDate = moment().format("YYYY-MM-DD HH:mm:ss");
 
   async function getLanguageId(languages) {
@@ -125,7 +175,7 @@ module.exports = async () => {
   
       var records = iterator.text;
 
-      if(records == "")
+      if(records.trim() == "")
       {
         continue;
       }
@@ -180,7 +230,7 @@ async function saveTherapistAvailability(value,therapist_id)
           for (const iterator of therapistAvai.timeslots) {
 
             var values_tbl_avalability_time_slots = [
-                [tbl_avalability_id,iterator.start_time,iterator.end_time,0,1,0,0,0,1,0,CurrentDate,CurrentDate]];
+                [tbl_avalability_id,iterator.start_time,iterator.end_time,0,1,0,0,0,0,0,CurrentDate,CurrentDate]];
         
             var sql_values_tbl_avalability = 
             "INSERT INTO tbl_avalability_time_slots (avalability_id_fk,time_slot,end_time_slot,audio,video,textbasedchat,inperson,homevisit,is_booked,is_close,created_at,updated_at) VALUES ?";
@@ -264,6 +314,11 @@ async function getTherapistAvailability(value,therapist_id,day)
 
   // return;
 
+
+  var usersData =[];
+
+  // where_did_you_hear_of_us
+
   for (const result of rows) {
   // rows.map((result) => {
     let obj = [];
@@ -272,6 +327,7 @@ async function getTherapistAvailability(value,therapist_id,day)
     obj.push("2");
 
     let applicationFormobj = {};
+    
     applicationFormobj.post_id = result.ID;
     for (const result1 of rows1) {
     // rows1.map((result1) => {
@@ -364,10 +420,7 @@ async function getTherapistAvailability(value,therapist_id,day)
           applicationFormobj.length_of_experience = result1.meta_value;
         }
 
-        if (result1.meta_key == "length-of-experience")
-        {
-          applicationFormobj.length_of_experience = result1.meta_value;
-        }
+       
 
        
 
@@ -381,15 +434,15 @@ async function getTherapistAvailability(value,therapist_id,day)
   }
 
 
-  // console.log(applicationForm.length);
+  // console.log(applicationForm);
 
   // return;
 
 
   async function getUserType(post_id) {
-    for (const result1 of applicationForm) 
+    for (const result1 of therapistArray) 
     {
-      if (result1.post_id == post_id)
+      if (result1[0] == post_id)
       {
        return 2; 
       }
@@ -398,17 +451,29 @@ async function getTherapistAvailability(value,therapist_id,day)
   }
 
   async function insertApplicationForm(post_id,user_id,email) {
+
+
+    var postIdNotMatching = false;
+
     for (const result1 of applicationForm) 
     {
       
       if (result1.post_id == post_id)
       {
+        postIdNotMatching = true;
         var values_therapist_details = [[user_id,result1.languages,result1.first_name,result1.middle_name,result1.last_name,
           result1.length_of_experience,result1.medium,result1.services,
           result1.approximate_availability_hours_per_week,"Asia/Singapore",CurrentDate,CurrentDate,email]];
         var sql =
         "INSERT INTO applications (therapist_id_FK,language_id_fk,first_name,middle_name,last_name,length_of_experience,medium_are_you_able_to_use_for_counselling,services_are_you_able_to_provide,approximate_availability,time_zone,created_at,updated_at,email) VALUES ?";
         const [rows6, fields6] = await db.connection1.query(sql, [values_therapist_details]);
+
+
+        var values_therapist_details = [[user_id,"Asia/Singapore",CurrentDate,CurrentDate,"24 hr"]];
+
+        var sql =
+        "INSERT INTO onboardings (therapist_id_FK,time_zone,created_at,updated_at,select_preferred_notice_period_for_new_booking) VALUES ?";
+        const [rows600, fields600] = await db.connection1.query(sql, [values_therapist_details]);
 
         // console.log(result1.calendar_shortcode);
 
@@ -417,13 +482,27 @@ async function getTherapistAvailability(value,therapist_id,day)
         } catch (error) {
           console.error(error);
           console.log("user_id :: "+user_id+" result1.first_name :: "+result1.first_name+"result1.calendar_shortcode :: "+result1.calendar_shortcode );
-
-          // expected output: ReferenceError: nonExistentFunction is not defined
-          // Note - error messages will vary depending on browser
         }
 
         
       }
+    }
+
+    if (postIdNotMatching == false)
+    {
+      var values_therapist_details = [[user_id,"Asia/Singapore",CurrentDate,CurrentDate,email]];
+      var sql =
+      "INSERT INTO applications (therapist_id_FK,time_zone,created_at,updated_at,email) VALUES ?";
+      const [rows6, fields6] = await db.connection1.query(sql, [values_therapist_details]);
+
+
+      var values_therapist_details = [[user_id,"Asia/Singapore",CurrentDate,CurrentDate,"24 hr"]];
+
+      var sql =
+      "INSERT INTO onboardings (therapist_id_FK,time_zone,created_at,updated_at,select_preferred_notice_period_for_new_booking) VALUES ?";
+      const [rows600, fields600] = await db.connection1.query(sql, [values_therapist_details]);
+
+      
     }
   }
 
@@ -500,6 +579,8 @@ async function getTherapistAvailability(value,therapist_id,day)
 
   user.map((val, i) => {
     let intakeFormobj = {};
+    let userOtherData = {};
+    userOtherData.user_id = val[1];
     intakeFormobj.user_id = val[1];
 
     rows4.map((val1, i1) => {
@@ -587,13 +668,26 @@ async function getTherapistAvailability(value,therapist_id,day)
           intakeFormobj.specific_goal = val1.meta_value;
         }
 
+        if (val1.meta_key == "where_did_you_hear_of_us")
+        {
+          userOtherData.where_did_you_hear_of_us = val1.meta_value;
+        }
 
+        if (val1.meta_key == "others")
+        {
+          userOtherData.others = val1.meta_value;
+        }
+
+        
+        
         
         
       }
     });
 
     intakeFormData.push(intakeFormobj);
+    usersData.push(userOtherData);
+    
 
     // console.log(val.length);
     // return;
@@ -615,6 +709,49 @@ function getWalletAmount(user_id) {
     }
   }
 }
+
+
+// if (val1.meta_key == "where_did_you_hear_of_us")
+//         {
+//           userOtherData.where_did_you_hear_of_us = val1.meta_value;
+//         }
+
+//         if (val1.meta_key == "others")
+//         {
+//           userOtherData.others = val1.meta_value;
+//         }
+
+
+
+function geUserDataothers(user_id) {
+
+  for (const iterator of usersData) {
+
+    if (iterator.user_id == user_id)
+    {
+      // if (iterator.key == key)
+      // {
+        return iterator.others;
+      // }
+      
+    }
+  }
+}
+function geUserDatawhere_did_you_hear_of_us(user_id) {
+  
+  for (const iterator of usersData) {
+    
+    if (iterator.user_id == user_id)
+    {
+      // if (iterator.key == key)
+      // {
+        return iterator.where_did_you_hear_of_us;
+      // }
+      
+    }
+  }
+}
+
 
 
 
@@ -670,14 +807,16 @@ function getWalletAmount(user_id) {
     // return;
     
 
-    records[records.length] = CurrentDate;
-    records[records.length] = CurrentDate;
-    // console.log(records);
 
+    records[records.length] = CurrentDate;
+    records[records.length] = CurrentDate;
+    records[records.length] = geUserDatawhere_did_you_hear_of_us(records[1]);
+    records[records.length] = geUserDataothers(records[1]);
+    
     // break;
 
     var sql =
-    "INSERT INTO users (usertype,post_id,mobile_no,email,dial_code,first_name,last_name,middle_name,created_at,updated_at) VALUES ?";
+    "INSERT INTO users (usertype,post_id,mobile_no,email,dial_code,first_name,last_name,middle_name,created_at,updated_at,how_did_you_find_us,find_us_other) VALUES ?";
 
     const [rows5, fields5] = await db.connection1.query(sql, [[records]]);
 
@@ -694,6 +833,7 @@ function getWalletAmount(user_id) {
     // therapist_details insert
     if (user_type == 2)
     {
+      var email = records[3];
       await insertApplicationForm(post_id,user_id,email);
       
       var values_therapist_details = [[5,user_id,"Asia/Singapore",CurrentDate,CurrentDate]];
@@ -723,6 +863,7 @@ function getWalletAmount(user_id) {
   // 
   }
   console.log("Insertion complete");
+
 
   
 };

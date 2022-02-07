@@ -10,13 +10,13 @@ var moment = require('moment-timezone');
 // var currentDate = moment().tz("Asia/Singapore").format('YYYY-MM-DD');
 // module.exports = async () => {
 
-var value = 'a:12:{s:3:"Thu";a:7:{s:9:"1300-1400";i:1;s:9:"1415-1515";i:1;s:9:"1600-1700";i:1;s:9:"1900-2000";i:1;s:9:"0900-1000";i:1;s:9:"1000-1100";i:1;s:9:"1100-1200";i:1;}s:11:"Thu-details";a:7:{s:9:"1300-1400";a:1:{s:5:"title";s:0:"";}s:9:"1415-1515";a:1:{s:5:"title";s:0:"";}s:9:"1600-1700";a:1:{s:5:"title";s:0:"";}s:9:"1900-2000";a:1:{s:5:"title";s:0:"";}s:9:"0900-1000";a:1:{s:5:"title";s:0:"";}s:9:"1000-1100";a:1:{s:5:"title";s:0:"";}s:9:"1100-1200";a:1:{s:5:"title";s:0:"";}}s:3:"Wed";a:3:{s:9:"1200-1300";i:1;s:9:"1315-1415";i:1;s:9:"1700-1800";i:1;}s:11:"Wed-details";a:3:{s:9:"1200-1300";a:1:{s:5:"title";s:0:"";}s:9:"1315-1415";a:1:{s:5:"title";s:0:"";}s:9:"1700-1800";a:1:{s:5:"title";s:0:"";}}s:3:"Mon";a:5:{s:9:"1600-1700";i:1;s:9:"1900-2000";i:1;s:9:"1430-1530";i:1;s:9:"1200-1300";i:1;s:9:"1300-1400";i:1;}s:11:"Mon-details";a:5:{s:9:"1600-1700";a:1:{s:5:"title";s:0:"";}s:9:"1900-2000";a:1:{s:5:"title";s:0:"";}s:9:"1430-1530";a:1:{s:5:"title";s:0:"";}s:9:"1200-1300";a:1:{s:5:"title";s:0:"";}s:9:"1300-1400";a:1:{s:5:"title";s:0:"";}}s:3:"Sat";a:2:{s:9:"1400-1500";i:1;s:9:"1515-1615";i:1;}s:11:"Sat-details";a:2:{s:9:"1400-1500";a:1:{s:5:"title";s:0:"";}s:9:"1515-1615";a:1:{s:5:"title";s:0:"";}}s:3:"Tue";a:4:{s:9:"1600-1700";i:1;s:9:"1900-2000";i:1;s:9:"1200-1300";i:1;s:9:"1315-1415";s:1:"1";}s:11:"Tue-details";a:4:{s:9:"1600-1700";a:1:{s:5:"title";s:0:"";}s:9:"1900-2000";a:1:{s:5:"title";s:0:"";}s:9:"1200-1300";a:1:{s:5:"title";s:0:"";}s:9:"1315-1415";a:1:{s:5:"title";s:0:"";}}s:3:"Fri";a:0:{}s:11:"Fri-details";a:0:{}}';
+// var value = 'a:12:{s:3:"Thu";a:7:{s:9:"1300-1400";i:1;s:9:"1415-1515";i:1;s:9:"1600-1700";i:1;s:9:"1900-2000";i:1;s:9:"0900-1000";i:1;s:9:"1000-1100";i:1;s:9:"1100-1200";i:1;}s:11:"Thu-details";a:7:{s:9:"1300-1400";a:1:{s:5:"title";s:0:"";}s:9:"1415-1515";a:1:{s:5:"title";s:0:"";}s:9:"1600-1700";a:1:{s:5:"title";s:0:"";}s:9:"1900-2000";a:1:{s:5:"title";s:0:"";}s:9:"0900-1000";a:1:{s:5:"title";s:0:"";}s:9:"1000-1100";a:1:{s:5:"title";s:0:"";}s:9:"1100-1200";a:1:{s:5:"title";s:0:"";}}s:3:"Wed";a:3:{s:9:"1200-1300";i:1;s:9:"1315-1415";i:1;s:9:"1700-1800";i:1;}s:11:"Wed-details";a:3:{s:9:"1200-1300";a:1:{s:5:"title";s:0:"";}s:9:"1315-1415";a:1:{s:5:"title";s:0:"";}s:9:"1700-1800";a:1:{s:5:"title";s:0:"";}}s:3:"Mon";a:5:{s:9:"1600-1700";i:1;s:9:"1900-2000";i:1;s:9:"1430-1530";i:1;s:9:"1200-1300";i:1;s:9:"1300-1400";i:1;}s:11:"Mon-details";a:5:{s:9:"1600-1700";a:1:{s:5:"title";s:0:"";}s:9:"1900-2000";a:1:{s:5:"title";s:0:"";}s:9:"1430-1530";a:1:{s:5:"title";s:0:"";}s:9:"1200-1300";a:1:{s:5:"title";s:0:"";}s:9:"1300-1400";a:1:{s:5:"title";s:0:"";}}s:3:"Sat";a:2:{s:9:"1400-1500";i:1;s:9:"1515-1615";i:1;}s:11:"Sat-details";a:2:{s:9:"1400-1500";a:1:{s:5:"title";s:0:"";}s:9:"1515-1615";a:1:{s:5:"title";s:0:"";}}s:3:"Tue";a:4:{s:9:"1600-1700";i:1;s:9:"1900-2000";i:1;s:9:"1200-1300";i:1;s:9:"1315-1415";s:1:"1";}s:11:"Tue-details";a:4:{s:9:"1600-1700";a:1:{s:5:"title";s:0:"";}s:9:"1900-2000";a:1:{s:5:"title";s:0:"";}s:9:"1200-1300";a:1:{s:5:"title";s:0:"";}s:9:"1315-1415";a:1:{s:5:"title";s:0:"";}}s:3:"Fri";a:0:{}s:11:"Fri-details";a:0:{}}';
 
-var days = ["Mon-details","Tue-details","Wed-details","Thu-details","Fri-details","Sat-details"];
+// var days = ["Mon-details","Tue-details","Wed-details","Thu-details","Fri-details","Sat-details"];
 
-(async()=>{
-    // await getDataa(value,"5");
-})();   
+// (async()=>{
+//     // await getDataa(value,"5");
+// })();   
 
 // var calender = '[booked-calendar calendar=124]';
 // calender = calender.split("=")[1];
@@ -161,9 +161,25 @@ var days = ["Mon-details","Tue-details","Wed-details","Thu-details","Fri-details
 // console.log(start_time);
 // console.log(end_time);
 
-// therapistOrder();
-therapist();
+// function getCouponsCustomerEmails(value)
+// {
+//     var couponsEmail = [];
+//     var result=unserialize(value);
+//     for(var attributename in result.__attr__){
+//         couponsEmail.push(result.__attr__[attributename].val.replace("*","")) ;
+//     }
+//     return couponsEmail.join();
+// }
+
+// var emails = getCouponsCustomerEmails('a:3:{i:0;s:12:"*@wrs.com.sg";i:1;s:12:"*@mandai.com";i:2;s:15:"*@mandai.org.sg";}');
+// console.log(emails);
+
+therapistOrder();
+// therapist();
 // coupons();
+
+// console.log(moment("2022-01-14 08:31:03", "YYYY-MM-DD").format("YYYY-MM-DD"));
+
 
 // };
 

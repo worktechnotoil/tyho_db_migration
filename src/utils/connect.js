@@ -6,13 +6,16 @@ module.exports = async () => {
     user: "root",
     password: "",
     database: "old_tyho",
+    port: "3307",
   });
 
   var connection1 = mysql.createPool({
     host: "localhost",
+    port: "3307",
+
     user: "root",
     password: "",
-    database: "tyho_dev_21jan",
+    database: "tyho_live_old_db",
   });
 
   return { connection, connection1 };

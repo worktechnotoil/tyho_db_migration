@@ -1,11 +1,19 @@
 const connect = require("./utils/connect");
 const therapist = require("./functions/therapist");
 const therapistOrder = require("./functions/therapistOrder");
+const RemoveDisabledSlots = require("./functions/RemoveDisabledSlots");
 const coupons = require("./functions/coupons");
 // const moment = require("moment");
 var HTMLParser = require('node-html-parser');
 var unserialize=require("php-serialization").unserialize;
 var moment = require('moment-timezone');
+
+
+
+// var appointment_timestamp_actualy_date = moment("2022-02-08 00:29:40").tz("UTC").format("YYYY-MM-DD HH:mm:ss");
+// console.log(appointment_timestamp_actualy_date);
+
+RemoveDisabledSlots();
 
 // var currentDate = moment().tz("Asia/Singapore").format('YYYY-MM-DD');
 // module.exports = async () => {
@@ -98,23 +106,26 @@ var moment = require('moment-timezone');
 
 // console.log(currentDate);
 
-// var value = 'a:12:{s:3:"Thu";a:7:{s:9:"1300-1400";i:1;s:9:"1415-1515";i:1;s:9:"1600-1700";i:1;s:9:"1900-2000";i:1;s:9:"0900-1000";i:1;s:9:"1000-1100";i:1;s:9:"1100-1200";i:1;}s:11:"Thu-details";a:7:{s:9:"1300-1400";a:1:{s:5:"title";s:0:"";}s:9:"1415-1515";a:1:{s:5:"title";s:0:"";}s:9:"1600-1700";a:1:{s:5:"title";s:0:"";}s:9:"1900-2000";a:1:{s:5:"title";s:0:"";}s:9:"0900-1000";a:1:{s:5:"title";s:0:"";}s:9:"1000-1100";a:1:{s:5:"title";s:0:"";}s:9:"1100-1200";a:1:{s:5:"title";s:0:"";}}s:3:"Wed";a:3:{s:9:"1200-1300";i:1;s:9:"1315-1415";i:1;s:9:"1700-1800";i:1;}s:11:"Wed-details";a:3:{s:9:"1200-1300";a:1:{s:5:"title";s:0:"";}s:9:"1315-1415";a:1:{s:5:"title";s:0:"";}s:9:"1700-1800";a:1:{s:5:"title";s:0:"";}}s:3:"Mon";a:5:{s:9:"1600-1700";i:1;s:9:"1900-2000";i:1;s:9:"1430-1530";i:1;s:9:"1200-1300";i:1;s:9:"1300-1400";i:1;}s:11:"Mon-details";a:5:{s:9:"1600-1700";a:1:{s:5:"title";s:0:"";}s:9:"1900-2000";a:1:{s:5:"title";s:0:"";}s:9:"1430-1530";a:1:{s:5:"title";s:0:"";}s:9:"1200-1300";a:1:{s:5:"title";s:0:"";}s:9:"1300-1400";a:1:{s:5:"title";s:0:"";}}s:3:"Sat";a:2:{s:9:"1400-1500";i:1;s:9:"1515-1615";i:1;}s:11:"Sat-details";a:2:{s:9:"1400-1500";a:1:{s:5:"title";s:0:"";}s:9:"1515-1615";a:1:{s:5:"title";s:0:"";}}s:3:"Tue";a:4:{s:9:"1600-1700";i:1;s:9:"1900-2000";i:1;s:9:"1200-1300";i:1;s:9:"1315-1415";s:1:"1";}s:11:"Tue-details";a:4:{s:9:"1600-1700";a:1:{s:5:"title";s:0:"";}s:9:"1900-2000";a:1:{s:5:"title";s:0:"";}s:9:"1200-1300";a:1:{s:5:"title";s:0:"";}s:9:"1315-1415";a:1:{s:5:"title";s:0:"";}}s:3:"Fri";a:0:{}s:11:"Fri-details";a:0:{}}';
-// var result=unserialize(value);
 
 // var timeSlotsArray = [];
 
-// var days = ["Mon-details","Tue-details","Wed-details","Thu-details","Fri-details","Sat-details"];
+// var days = ["Thu","Wed"];
 
 // for(var day of days){
 //     for(var attributename in result.__attr__){
 //         if (attributename == day)
 //         {
-//             console.log(attributename);
+//             // console.log(attributename);
 //             var timeObj ={};
 //             timeObj.day  = day;
 //             var timeslots = [];
 
+//             console.log(result[attributename].__attr__);
+
 //             for (var key in result[attributename].__attr__){
+
+
+//                 // console.log(key);
 
 //                 var timeSlotsObj ={};
 //                 const start_time_old = key.split("-")[0];
@@ -174,7 +185,22 @@ var moment = require('moment-timezone');
 // var emails = getCouponsCustomerEmails('a:3:{i:0;s:12:"*@wrs.com.sg";i:1;s:12:"*@mandai.com";i:2;s:15:"*@mandai.org.sg";}');
 // console.log(emails);
 
-therapistOrder();
+// var date = moment("2022-10-14")
+// var now = moment();
+
+// if (now > date)
+// {
+//     console.log("Today date greater");
+// }else
+// {
+//     console.log("Today date less");
+// }
+
+// console.log(date);
+// console.log(now);
+
+// 
+// therapistOrder();
 // therapist();
 // coupons();
 

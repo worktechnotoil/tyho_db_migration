@@ -216,28 +216,35 @@ async function saveTherapistAvailability(value,therapist_id)
     
         // console.log(therapistAvai);
 
-        var values_tbl_avalability = [
-            [therapist_id, threeMonthAfterDate,CurrentDate,CurrentDate]];
-  
-          var sql_tbl_avalability =
-          "INSERT INTO tbl_avalability (therapist_id_fk,slot_date,created_at,updated_at) VALUES ?";
-  
-          const [rows5, fields5] = await db.connection1.query(sql_tbl_avalability, [values_tbl_avalability]);
-          var tbl_avalability_id = rows5.insertId;
+      
 
         if (therapistAvai !== undefined)
         {
-          for (const iterator of therapistAvai.timeslots) {
 
-            var values_tbl_avalability_time_slots = [
-                [tbl_avalability_id,iterator.start_time,iterator.end_time,0,1,0,0,0,0,0,CurrentDate,CurrentDate]];
-        
-            var sql_values_tbl_avalability = 
-            "INSERT INTO tbl_avalability_time_slots (avalability_id_fk,time_slot,end_time_slot,audio,video,textbasedchat,inperson,homevisit,is_booked,is_close,created_at,updated_at) VALUES ?";
+          if (therapistAvai.timeslots.length > 0)
+          {
+            var values_tbl_avalability = [
+              [therapist_id, threeMonthAfterDate,CurrentDate,CurrentDate]];
     
-            const [rows6, fields6] = await db.connection1.query(sql_values_tbl_avalability, [values_tbl_avalability_time_slots]);
-        
+            var sql_tbl_avalability =
+            "INSERT INTO tbl_avalability (therapist_id_fk,slot_date,created_at,updated_at) VALUES ?";
+    
+            const [rows5, fields5] = await db.connection1.query(sql_tbl_avalability, [values_tbl_avalability]);
+            var tbl_avalability_id = rows5.insertId;
+            
+            for (const iterator of therapistAvai.timeslots) {
+  
+              var values_tbl_avalability_time_slots = [
+                  [tbl_avalability_id,iterator.start_time,iterator.end_time,0,1,0,0,0,0,0,CurrentDate,CurrentDate]];
+          
+              var sql_values_tbl_avalability = 
+              "INSERT INTO tbl_avalability_time_slots (avalability_id_fk,time_slot,end_time_slot,audio,video,textbasedchat,inperson,homevisit,is_booked,is_close,created_at,updated_at) VALUES ?";
+      
+              const [rows6, fields6] = await db.connection1.query(sql_values_tbl_avalability, [values_tbl_avalability_time_slots]);
+          
+            }
           }
+          
         }
 
         
@@ -359,6 +366,54 @@ async function getTherapistAvailability(value,therapist_id,day)
           applicationFormobj.phone_number = result1.meta_value;
         }
 
+        // New
+        if (result1.meta_key == "current-occupation")
+        {
+          applicationFormobj.current_occupation = result1.meta_value;
+        }
+
+        if (result1.meta_key == "area-of-expertise-specialisation")
+        {
+          applicationFormobj.area_of_expertise_specialisation = result1.meta_value;
+        }
+
+        if (result1.meta_key == "therapeutic-approaches")
+        {
+          applicationFormobj.therapeutic_approaches = result1.meta_value;
+        }
+
+        if (result1.meta_key == "current--last-place-of-practice")
+        {
+          applicationFormobj.current_last_place_of_practice = result1.meta_value;
+        }
+
+        if (result1.meta_key == "educational-qualifications")
+        {
+          applicationFormobj.educational_qualifications = result1.meta_value;
+        }
+        
+        if (result1.meta_key == "professional-certifications")
+        {
+          applicationFormobj.professional_certifications = result1.meta_value;
+        }
+
+        if (result1.meta_key == "professional-memberships")
+        {
+          applicationFormobj.professional_memberships = result1.meta_value;
+        }
+
+        if (result1.meta_key == "specific-groups")
+        {
+          applicationFormobj.specific_groups = result1.meta_value;
+        }
+
+        if (result1.meta_key == "not-to-work-with")
+        {
+          applicationFormobj.not_to_work_with = result1.meta_value;
+        }
+
+        
+
         if (result1.meta_key == "calendar_shortcode")
         {
           var calender = result1.meta_value;
@@ -458,14 +513,66 @@ async function getTherapistAvailability(value,therapist_id,day)
     for (const result1 of applicationForm) 
     {
       
+
+      if (result1.meta_key == "current-occupation")
+        {
+          applicationFormobj.current_occupation = result1.meta_value;
+        }
+        
+
+        if (result1.meta_key == "area-of-expertise-specialisation")
+        {
+          applicationFormobj.area_of_expertise_specialisation = result1.meta_value;
+        }
+
+        if (result1.meta_key == "therapeutic-approaches")
+        {
+          applicationFormobj.therapeutic_approaches = result1.meta_value;
+        }
+
+        if (result1.meta_key == "current--last-place-of-practice")
+        {
+          applicationFormobj.current_last_place_of_practice = result1.meta_value;
+        }
+
+        if (result1.meta_key == "educational-qualifications")
+        {
+          applicationFormobj.educational_qualifications = result1.meta_value;
+        }
+        
+        if (result1.meta_key == "professional-certifications")
+        {
+          applicationFormobj.professional_certifications = result1.meta_value;
+        }
+
+        if (result1.meta_key == "professional-memberships")
+        {
+          applicationFormobj.professional_memberships = result1.meta_value;
+        }
+
+        if (result1.meta_key == "specific-groups")
+        {
+          applicationFormobj.specific_groups = result1.meta_value;
+        }
+
+        if (result1.meta_key == "not-to-work-with")
+        {
+          applicationFormobj.not_to_work_with = result1.meta_value;
+        }
+
       if (result1.post_id == post_id)
       {
+
+        var gender = getTherapistGender(user_id);
+
         postIdNotMatching = true;
-        var values_therapist_details = [[user_id,result1.languages,result1.first_name,result1.middle_name,result1.last_name,
+        var values_therapist_details = [[gender,user_id,result1.languages,result1.first_name,result1.middle_name,result1.last_name,
           result1.length_of_experience,result1.medium,result1.services,
-          result1.approximate_availability_hours_per_week,"Asia/Singapore",CurrentDate,CurrentDate,email]];
+          result1.approximate_availability_hours_per_week,"Asia/Singapore",CurrentDate,CurrentDate,email,result1.current_occupation,result1.area_of_expertise_specialisation,result1.therapeutic_approaches,result1.current_last_place_of_practice,result1.educational_qualifications,result1.professional_certifications,result1.professional_memberships,result1.specific_groups,result1.not_to_work_with]];
+
+        
         var sql =
-        "INSERT INTO applications (therapist_id_FK,language_id_fk,first_name,middle_name,last_name,length_of_experience,medium_are_you_able_to_use_for_counselling,services_are_you_able_to_provide,approximate_availability,time_zone,created_at,updated_at,email) VALUES ?";
+        "INSERT INTO applications (gender,therapist_id_FK,language_id_fk,first_name,middle_name,last_name,length_of_experience,medium_are_you_able_to_use_for_counselling,services_are_you_able_to_provide,approximate_availability,time_zone,created_at,updated_at,email,occupation,areas_of_expertise_specialisation,therapeutic_approaches,current_last_place_of_work,educational_qualifications,professional_certifications,professional_memberships,work_with_any_specific_groups_of_people,any_clients_that_you_prefer_not_to_work_with_for_personal_reason) VALUES ?";
         const [rows6, fields6] = await db.connection1.query(sql, [values_therapist_details]);
 
 
@@ -549,8 +656,6 @@ async function getTherapistAvailability(value,therapist_id,day)
     });
   });
 
-  // console.log(arr);
-  // return;
 
   let user = [];
   rows3.map((val, i) => {
@@ -566,16 +671,25 @@ async function getTherapistAvailability(value,therapist_id,day)
     //   ar.push(val.post_id,val.ID, val.user_login, val.user_email, "+65");
     // }else
     // {
-      ar.push(val.ID, val.user_login, val.user_email, "+65");
+
+
+
+      var user_registered = moment(val.user_registered, "YYYY-MM-DD HH:mm").tz("Asia/kolkata").format("YYYY-MM-DD HH:mm");
+      ar.push(val.ID, val.user_login, val.user_email, "+65",user_registered,user_registered);
     // }
     user.push(ar);
   });
+  
 
   // console.log(user);
   // return;
 
   var WalletArray = [];
+  var userDialCodeArray = [];
+  
 
+  // console.log(arr);
+  // return;
 
   user.map((val, i) => {
     let intakeFormobj = {};
@@ -594,6 +708,17 @@ async function getTherapistAvailability(value,therapist_id,day)
         if (val1.meta_key == "middlename") {
           val.push(val1.meta_value);
         }
+        if (val1.meta_key == "residentialpostcode") {
+
+          var obj = {};
+          obj.user_id = val1.user_id;
+          obj.code = val1.meta_value;
+          userDialCodeArray.push(obj);
+        }
+
+        
+
+        
 
         if (val1.meta_key == "_uw_balance") {
 
@@ -691,13 +816,36 @@ async function getTherapistAvailability(value,therapist_id,day)
 
     // console.log(val.length);
     // return;
-    if (val.length == 7) {
+    if (val.length == 9) {
       val.push("");
     }
   });
 
   
 
+  
+
+  function getuserDialCode(user_id) {
+  
+    for (const iterator of userDialCodeArray) {
+      
+      if (iterator.user_id == user_id)
+      {
+        return iterator.code;
+      }
+    }
+  }
+
+  function getTherapistGender(user_id) {
+  
+    for (const iterator of intakeFormData) {
+      
+      if (iterator.user_id == user_id)
+      {
+        return iterator.gender;
+      }
+    }
+  }
 
 function getWalletAmount(user_id) {
   
@@ -761,8 +909,7 @@ function geUserDatawhere_did_you_hear_of_us(user_id) {
 
   for (var records of user) 
   {
-    console.log(records);
-
+   
 
 
     // return;
@@ -808,15 +955,19 @@ function geUserDatawhere_did_you_hear_of_us(user_id) {
     
 
 
-    records[records.length] = CurrentDate;
-    records[records.length] = CurrentDate;
+    // records[records.length] = CurrentDate;
+    // records[records.length] = CurrentDate;
     records[records.length] = geUserDatawhere_did_you_hear_of_us(records[1]);
     records[records.length] = geUserDataothers(records[1]);
     
+    console.log(records);
+
+    records[4] = getuserDialCode(records[1])
+    // continue;
     // break;
 
     var sql =
-    "INSERT INTO users (usertype,post_id,mobile_no,email,dial_code,first_name,last_name,middle_name,created_at,updated_at,how_did_you_find_us,find_us_other) VALUES ?";
+    "INSERT INTO users (usertype,post_id,mobile_no,email,dial_code,created_at,updated_at,first_name,last_name,middle_name,how_did_you_find_us,find_us_other) VALUES ?";
 
     const [rows5, fields5] = await db.connection1.query(sql, [[records]]);
 

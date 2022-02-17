@@ -5,7 +5,7 @@ module.exports = async () => {
     host: "localhost",
     user: "root",
     password: "",
-    database: "old_tyho",
+    database: "talkyourheartoutapp",
     port: "3307",
   });
 
@@ -15,7 +15,7 @@ module.exports = async () => {
 
     user: "root",
     password: "",
-    database: "tyho_live_old_db",
+    database: "latest_live",
   });
 
   return { connection, connection1 };

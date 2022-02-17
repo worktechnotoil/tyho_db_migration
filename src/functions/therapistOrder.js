@@ -33,6 +33,7 @@ module.exports = async () => {
     "SELECT * FROM `xalfyiBase_users`"
   );
 
+
 // -- Coupons code starts --
 
   const [rows10, fields10] = await db.connection.execute(
@@ -44,8 +45,10 @@ module.exports = async () => {
   );
 
   const [rows13, fields13] = await db.connection.execute(
-    "SELECT * FROM `xalfyiBase_wc_order_coupon_lookup` ORDER BY `id` DESC"
+    "SELECT * FROM `xalfyiBase_wc_order_coupon_lookup`"
   );
+
+  
 
   var therapistArray = [
     {"name":"Lira Low","mobile":"0788243906","email":"liralow@gmail.com"},
@@ -282,7 +285,7 @@ function getCouponsCustomerEmails(value)
 
         if (value1.meta_key == "_appointment_timestamp") {
           arr[index].appointment_timestamp = value1.meta_value;
-          arr[index].appointment_timestamp_actualy_date = moment.unix(value1.meta_value).format("YYYY-MM-DD");
+          arr[index].appointment_timestamp_actualy_date = moment.unix(value1.meta_value).tz("UTC").format("YYYY-MM-DD");
         }
 
         if (value1.meta_key == "_appointment_timeslot") {
@@ -413,7 +416,11 @@ function getCouponsCustomerEmails(value)
           value2.city = value1.meta_value;
         }
         if (value1.meta_key == "_completed_date") {
-          value2.date_paid = value1.meta_value;
+          value2.date_paid = moment(value1.meta_value).tz("UTC").format("YYYY-MM-DD HH:mm:ss");
+        }
+
+        if (value1.meta_key == "_payment_method") {
+          value2.payment_method = value1.meta_value;
           
         }
 
@@ -438,14 +445,6 @@ function getCouponsCustomerEmails(value)
 
   console.log("Mapping done deleting of old data started");
 
-  // const [rows100, fields100] = await db.connection1.query('TRUNCATE TABLE tbl_avalability ');
-
-  console.log("Deleted old tbl_avalability");
-
-  // const [rows101, fields101] = await db.connection1.query('TRUNCATE TABLE tbl_avalability_time_slots ');
-
-  console.log("Deleted old tbl_avalability_time_slots");
-
   const [rows102, fields102] = await db.connection1.query('TRUNCATE TABLE tbl_order ');
 
   console.log("Deleted old tbl_order");
@@ -453,8 +452,6 @@ function getCouponsCustomerEmails(value)
   const [rows103, fields103] = await db.connection1.query('TRUNCATE TABLE tbl_order_session ');
 
   console.log("Deleted old tbl_order_session");
-
-  
   
 
 
@@ -470,11 +467,16 @@ function getCouponsCustomerEmails(value)
         continue;
       }
 
+      // if (records.therapist_id === undefined)
+      // {
+      //   continue;
+      // }
+
 
       // console.log(records);
       // return;
       
-      const [rows9, fields9] = await db.connection1.query('Select * from tbl_avalability WHERE slot_date = ?', [ records.appointment_timestamp_actualy_date]);
+      const [rows9, fields9] = await db.connection1.query('Select * from tbl_avalability WHERE slot_date = ? AND therapist_id_fk = ?', [ records.appointment_timestamp_actualy_date,records.therapist_id]);
 
 
       var tbl_avalability_id = "";
@@ -494,8 +496,8 @@ function getCouponsCustomerEmails(value)
         const [rows5, fields5] = await db.connection1.query(sql_tbl_avalability, [values_tbl_avalability]);
         tbl_avalability_id = rows5.insertId;
       }
-
-      const [rows900, fields900] = await db.connection1.query('Select tbl_avalability_time_slots.id as slot_time_id from tbl_avalability_time_slots WHERE avalability_id_fk = ? AND time_slot = ?', [ records.appointment_timestamp_actualy_date,records.start_time]);
+      
+      const [rows900, fields900] = await db.connection1.query('SELECT tbl_avalability_time_slots.id FROM `tbl_avalability` LEFT JOIN tbl_avalability_time_slots ON tbl_avalability_time_slots.avalability_id_fk = tbl_avalability.id WHERE tbl_avalability.slot_date = ? AND time_slot = ? AND therapist_id_fk = ?', [ records.appointment_timestamp_actualy_date,records.start_time,records.therapist_id]);
       
       var slot_id_fk = "";
 
@@ -525,20 +527,66 @@ function getCouponsCustomerEmails(value)
       records.service_amount = parseFloat(totalAmount).toFixed(2);
       records.total_amount = parseFloat(totalAmount).toFixed(2);
 
+      // 0 : stripe, 1 : wallet, 2 : coupon, 3: wallet+coupon, 4: wallet+stripe, 5: coupon+stripe, 6:wallet+stripe+coupon
 
-      var values_tbl_order = [[records.therapist_id,records.client_id,1,1,5,records.transaction_id,records.amount,records.total_amount,records.discount_amount,records.service_amount,0,records.zip_code,records.phone_no,records.country_id_fk,records.city,"",records.order_status,records.time_zone,records.date_paid,records.date_paid,getCouponIdFromOrderId(records.post_id)]];
+
+      var payment_mode = 0;
+
+
+      var coupon = getCouponIdFromOrderId(records.post_id);
+
+      if (records.payment_method == "stripe")
+      {
+        if (records.discount_amount == 0)
+        {
+          
+          payment_mode = 0;
+        }else
+        {
+          if (coupon == "")
+          {
+            payment_mode = 0;
+          }else
+          {
+            payment_mode = 5;
+          }
+          
+        }
+      }else if (records.payment_method == "wpuw")
+      {
+        if (records.discount_amount == 0)
+        {
+          payment_mode = 1;
+        }else
+        {
+          if (coupon == "")
+          {
+            payment_mode = 0;
+          }else
+          {
+            payment_mode = 3;
+          }
+          
+        }
+      }
+    // records.discount_amount
+    // records.total_amount
+
+
+
+      var values_tbl_order = [[payment_mode,records.therapist_id,records.client_id,1,1,5,records.transaction_id,records.amount,records.total_amount,records.discount_amount,records.service_amount,0,records.zip_code,records.phone_no,records.country_id_fk,records.city,"",records.order_status,records.time_zone,records.date_paid,records.date_paid,coupon]];
 
       var sql_tbl_order = 
-      "INSERT INTO tbl_order (therapist_id_fk,client_id_fk,service_id_fk,medium_id_fk,country_id_fk,transaction_id,amount,total_amount,discount_amount,service_amount,medium_amount,zip_code,phone_no,country,city,state,order_status,time_zone,created_at,updated_at,discount_coupon) VALUES ?";
+      "INSERT INTO tbl_order (type_of_payment_mode,therapist_id_fk,client_id_fk,service_id_fk,medium_id_fk,country_id_fk,transaction_id,amount,total_amount,discount_amount,service_amount,medium_amount,zip_code,phone_no,country,city,state,order_status,time_zone,created_at,updated_at,discount_coupon) VALUES ?";
 
       const [rows7, fields7] = await db.connection1.query(sql_tbl_order, [values_tbl_order]);
 
       var order_id_pk = rows7.insertId;
 
-      var values_tbl_order = [[records.appointment_timestamp_actualy_date,records.session_id,order_id_pk,slot_id_fk,1,1,0,records.date_paid,records.date_paid]];
+      var values_tbl_order = [[records.appointment_timestamp,records.appointment_timestamp_actualy_date,records.session_id,order_id_pk,slot_id_fk,0,0,0,records.date_paid,records.date_paid]];
 
       var sql_tbl_order = 
-      "INSERT INTO tbl_order_session (booking_date,session_id,order_id_fk,slot_id_fk,no_show_by_therapist,no_show_by_client,session_status,created_at,updated_at) VALUES ?";
+      "INSERT INTO tbl_order_session (timestamp,booking_date,session_id,order_id_fk,slot_id_fk,no_show_by_therapist,no_show_by_client,session_status,created_at,updated_at) VALUES ?";
 
       const [rows8, fields8] = await db.connection1.query(sql_tbl_order, [values_tbl_order]);
 
@@ -549,9 +597,9 @@ function getCouponsCustomerEmails(value)
   // }
   
 
-  var sql =
-  "UPDATE `users` SET email = CONCAT(MD5(UUID()),'@mailinator.com')";
-  const [rows7, fields7] = await db.connection1.query(sql, []);
+  // var sql =
+  // "UPDATE `users` SET email = CONCAT(MD5(UUID()),'@mailinator.com')";
+  // const [rows7, fields7] = await db.connection1.query(sql, []);
 
   
     console.log("Looo krlo baat");
